@@ -68,6 +68,9 @@
     font-size: 13px; cursor: pointer; font-family: inherit; color: #4a5262;
   }
   button:hover { background: #f0f4ff; border-color: #3b82f6; color: #3b82f6; }
+  button.primary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+  button.primary:hover { background: #2563eb; border-color: #2563eb; color: #fff; }
+  .save-status { font-size: 13px; color: #16a34a; align-self: center; }
   .footer { text-align: center; color: #9ca3af; font-size: 12px; margin-top: 20px; }
 </style>
 </head>
@@ -97,7 +100,8 @@
         </table>
       </div>
       <div class="actions">
-        <button id="resetBtn">🔄 기본값으로 초기화</button>
+        <button id="saveBtn" class="primary">💾 저장</button>
+        <span id="saveStatus" class="save-status"></span>
       </div>
     </div>
   </div>
@@ -207,9 +211,6 @@ function renderPriceTable() {
       const item = e.target.dataset.item;
       const val = Math.max(0, parseInt(e.target.value || "0", 10));
       prices[editPort][item] = val;
-      savePrices();
-      renderTop();
-      if (selectedDest) renderDest();
     });
   });
 }
@@ -365,7 +366,15 @@ document.getElementById("editPort").addEventListener("change", e => {
   editPort = e.target.value;
   renderPriceTable();
 });
-document.getElementById("resetBtn").addEventListener("click", resetPrices);
+document.getElementById("saveBtn").addEventListener("click", () => {
+  savePrices();
+  renderTop();
+  if (selectedDest) renderDest();
+  const status = document.getElementById("saveStatus");
+  status.textContent = "✅ 저장 완료";
+  clearTimeout(window._saveTimer);
+  window._saveTimer = setTimeout(() => { status.textContent = ""; }, 1800);
+});
 
 // 2번 섹션 접기/펼치기
 const COLLAPSE_KEY = "gabbu_price_collapsed";
