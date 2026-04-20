@@ -101,6 +101,9 @@
       </div>
       <div class="actions">
         <button id="saveBtn" class="primary">💾 저장</button>
+        <button id="exportBtn">📥 JSON 내보내기</button>
+        <button id="importBtn">📂 JSON 불러오기</button>
+        <input type="file" id="importFile" accept=".json,application/json" style="display:none;">
         <span id="saveStatus" class="save-status"></span>
       </div>
     </div>
@@ -366,14 +369,64 @@ document.getElementById("editPort").addEventListener("change", e => {
   editPort = e.target.value;
   renderPriceTable();
 });
+function flashStatus(msg, color) {
+  const status = document.getElementById("saveStatus");
+  status.textContent = msg;
+  status.style.color = color || "#16a34a";
+  clearTimeout(window._saveTimer);
+  window._saveTimer = setTimeout(() => { status.textContent = ""; }, 2000);
+}
+
 document.getElementById("saveBtn").addEventListener("click", () => {
   savePrices();
   renderTop();
   if (selectedDest) renderDest();
-  const status = document.getElementById("saveStatus");
-  status.textContent = "✅ 저장 완료";
-  clearTimeout(window._saveTimer);
-  window._saveTimer = setTimeout(() => { status.textContent = ""; }, 1800);
+  flashStatus("✅ 저장 완료");
+});
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(prices, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const ts = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `gabbu_prices_${ts}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  flashStatus("📥 파일 다운로드됨");
+});
+
+document.getElementById("importBtn").addEventListener("click", () => {
+  document.getElementById("importFile").click();
+});
+
+document.getElementById("importFile").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      const valid = {};
+      for (const p of PORT_ORDER) {
+        valid[p] = {};
+        for (const it of ITEMS) {
+          const v = data?.[p]?.[it];
+          valid[p][it] = (typeof v === "number" && v >= 0) ? Math.floor(v) : (DEFAULT_PRICES[p]?.[it] ?? 0);
+        }
+      }
+      prices = valid;
+      savePrices();
+      renderPriceTable();
+      renderTop();
+      if (selectedDest) renderDest();
+      flashStatus("✅ 불러오기 완료");
+    } catch (err) {
+      flashStatus("❌ 파일이 올바르지 않습니다", "#dc2626");
+    }
+    e.target.value = "";
+  };
+  reader.readAsText(file);
 });
 
 // 2번 섹션 접기/펼치기
