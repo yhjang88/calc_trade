@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>갑부: 장사의 시대 — 위대한 항로 수익 계산기</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", Roboto, sans-serif;
+    margin: 0; padding: 24px; background: #f5f6f8; color: #1d2433;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  .subtitle { color: #6b7380; margin-bottom: 24px; }
+  .card {
+    background: #fff; border: 1px solid #e3e6eb; border-radius: 10px;
+    padding: 20px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  h2 { font-size: 18px; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  label { display: block; font-size: 13px; color: #4a5262; margin-bottom: 6px; font-weight: 500; }
+  select, input[type=number] {
+    width: 100%; padding: 9px 12px; border: 1px solid #d4d8e0; border-radius: 6px;
+    font-size: 14px; background: #fff; font-family: inherit;
+  }
+  select:focus, input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid #eef0f4; }
+  th { background: #f8f9fb; font-weight: 600; color: #4a5262; font-size: 13px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .rank { width: 42px; text-align: center; font-weight: 600; color: #6b7380; }
+  tbody tr.clickable { cursor: pointer; transition: background .12s; }
+  tbody tr.clickable:hover { background: #f0f7ff; }
+  tbody tr.selected { background: #dbeafe !important; }
+  .positive { color: #16a34a; font-weight: 600; }
+  .negative { color: #dc2626; }
+  .special { color: #d97706; }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .metric {
+    background: linear-gradient(135deg, #fefefe, #f0f4ff);
+    border: 1px solid #e0e7ff; border-radius: 8px; padding: 14px;
+  }
+  .metric .label { font-size: 12px; color: #6b7380; margin-bottom: 4px; }
+  .metric .value { font-size: 22px; font-weight: 700; color: #16a34a; margin-bottom: 2px; }
+  .metric .sub { font-size: 12px; color: #6b7380; }
+  .price-input {
+    width: 100%; padding: 6px 8px; border: 1px solid #d4d8e0; border-radius: 4px;
+    font-size: 14px; text-align: right; font-variant-numeric: tabular-nums;
+  }
+  .price-input:focus { outline: none; border-color: #3b82f6; background: #f0f7ff; }
+  .empty {
+    padding: 28px; text-align: center; color: #6b7380; background: #fafbfd;
+    border-radius: 6px; font-size: 14px;
+  }
+  .hint { color: #6b7380; font-size: 13px; margin-top: 10px; }
+  .actions { display: flex; gap: 8px; margin-top: 12px; }
+  button {
+    padding: 8px 14px; border: 1px solid #d4d8e0; background: #fff; border-radius: 6px;
+    font-size: 13px; cursor: pointer; font-family: inherit; color: #4a5262;
+  }
+  button:hover { background: #f0f4ff; border-color: #3b82f6; color: #3b82f6; }
+  .footer { text-align: center; color: #9ca3af; font-size: 12px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>⚓ 갑부: 장사의 시대 — 위대한 항로 수익 계산기</h1>
+  <div class="subtitle">출발 항구를 선택하고 각 항구의 화물 가격을 입력하면 최고 수익 경로를 자동으로 계산합니다.</div>
+
+  <!-- 1) 출발 항구 -->
+  <div class="card">
+    <h2>🛒 출발 항구 선택</h2>
+    <select id="departure"></select>
+  </div>
+
+  <!-- 2) 가격 입력 -->
+  <div class="card">
+    <h2>📝 항구별 화물 가격 입력</h2>
+    <label>가격을 입력할 항구</label>
+    <select id="editPort"></select>
+    <div style="margin-top: 16px;">
+      <table id="priceTable">
+        <thead>
+          <tr><th>화물</th><th>특산품</th><th class="num">가격</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="actions">
+      <button id="resetBtn">🔄 기본값으로 초기화</button>
+    </div>
+  </div>
+
+  <!-- 3) Top 10 -->
+  <div class="card">
+    <h2 id="topTitle">📊 화물별 최고 수익 Top 10</h2>
+    <div id="metricsBox" class="metrics"></div>
+    <div id="topContent"></div>
+    <div class="hint" id="topHint">💡 표에서 행을 클릭하면 해당 도착지의 화물별 수익률 Top 10이 아래에 표시됩니다.</div>
+  </div>
+
+  <!-- 4) 선택 도착지 상세 -->
+  <div class="card" id="destCard" style="display:none;">
+    <h2 id="destTitle">📦 도착지 상세</h2>
+    <div id="destContent"></div>
+  </div>
+
+  <div class="footer">
+    데이터는 브라우저 로컬에 저장됩니다 · ⚓
+  </div>
+</div>
+
+<script>
+const PORT_ORDER = [
+  "평경","개경","명주","천주","광주","담수","안남","브루나이",
+  "섬라국","크메르","술루","스리비자야","말레이","버마",
+  "천축","실론","페르시아","대식국","미스르","바스라"
+];
+const SPECIALS = {
+  "평경":"목재","개경":"녹용","명주":"도자기","천주":"녹차",
+  "광주":"비단","담수":"진주","안남":"벼","브루나이":"제비집",
+  "섬라국":"상아","크메르":"파인애플","술루":"꽃게","스리비자야":"술",
+  "말레이":"어육","버마":"철광석","천축":"향료","실론":"야자",
+  "페르시아":"수정","대식국":"옥 제품","미스르":"피혁","바스라":"백은"
+};
+const ITEMS = [
+  "목재","녹용","도자기","녹차","비단","진주","벼","제비집",
+  "상아","파인애플","꽃게","술","어육","철광석","향료","야자",
+  "수정","옥 제품","피혁","백은"
+];
+
+const DEFAULT_PRICES = {"평경":{"목재":82,"녹용":962,"도자기":0,"녹차":180,"비단":0,"진주":499,"벼":0,"제비집":0,"상아":904,"파인애플":93,"꽃게":185,"술":0,"어육":93,"철광석":195,"향료":281,"야자":0,"수정":196,"옥 제품":270,"피혁":0,"백은":0},"개경":{"목재":91,"녹용":829,"도자기":544,"녹차":195,"비단":211,"진주":455,"벼":93,"제비집":503,"상아":1072,"파인애플":106,"꽃게":181,"술":100,"어육":0,"철광석":199,"향료":311,"야자":104,"수정":191,"옥 제품":292,"피혁":292,"백은":275},"명주":{"목재":0,"녹용":925,"도자기":427,"녹차":185,"비단":214,"진주":454,"벼":92,"제비집":506,"상아":0,"파인애플":99,"꽃게":192,"술":0,"어육":104,"철광석":210,"향료":311,"야자":91,"수정":196,"옥 제품":0,"피혁":298,"백은":275},"천주":{"목재":96,"녹용":963,"도자기":0,"녹차":170,"비단":0,"진주":0,"벼":95,"제비집":464,"상아":0,"파인애플":0,"꽃게":198,"술":0,"어육":0,"철광석":198,"향료":285,"야자":99,"수정":187,"옥 제품":0,"피혁":274,"백은":289},"광주":{"목재":98,"녹용":1062,"도자기":491,"녹차":182,"비단":161,"진주":0,"벼":102,"제비집":548,"상아":979,"파인애플":100,"꽃게":191,"술":94,"어육":91,"철광석":193,"향료":296,"야자":93,"수정":183,"옥 제품":289,"피혁":320,"백은":317},"담수":{"목재":95,"녹용":1012,"도자기":503,"녹차":206,"비단":202,"진주":433,"벼":104,"제비집":496,"상아":1077,"파인애플":98,"꽃게":209,"술":91,"어육":108,"철광석":217,"향료":0,"야자":104,"수정":185,"옥 제품":307,"피혁":0,"백은":306},"안남":{"목재":0,"녹용":0,"도자기":470,"녹차":186,"비단":0,"진주":0,"벼":84,"제비집":0,"상아":0,"파인애플":0,"꽃게":192,"술":92,"어육":92,"철광석":0,"향료":278,"야자":95,"수정":202,"옥 제품":0,"피혁":290,"백은":293},"브루나이":{"목재":98,"녹용":949,"도자기":451,"녹차":183,"비단":0,"진주":508,"벼":0,"제비집":432,"상아":974,"파인애플":91,"꽃게":0,"술":94,"어육":101,"철광석":0,"향료":278,"야자":95,"수정":186,"옥 제품":293,"피혁":293,"백은":0},"섬라국":{"목재":0,"녹용":920,"도자기":492,"녹차":185,"비단":199,"진주":467,"벼":0,"제비집":0,"상아":892,"파인애플":0,"꽃게":188,"술":0,"어육":0,"철광석":198,"향료":0,"야자":96,"수정":195,"옥 제품":294,"피혁":0,"백은":0},"크메르":{"목재":0,"녹용":0,"도자기":459,"녹차":0,"비단":188,"진주":481,"벼":96,"제비집":0,"상아":944,"파인애플":89,"꽃게":0,"술":97,"어육":95,"철광석":0,"향료":299,"야자":0,"수정":181,"옥 제품":278,"피혁":0,"백은":281},"술루":{"목재":95,"녹용":0,"도자기":0,"녹차":199,"비단":0,"진주":473,"벼":0,"제비집":0,"상아":941,"파인애플":94,"꽃게":161,"술":0,"어육":0,"철광석":0,"향료":0,"야자":93,"수정":193,"옥 제품":283,"피혁":291,"백은":283},"스리비자야":{"목재":92,"녹용":0,"도자기":504,"녹차":0,"비단":0,"진주":463,"벼":0,"제비집":469,"상아":976,"파인애플":0,"꽃게":0,"술":81,"어육":100,"철광석":0,"향료":0,"야자":97,"수정":0,"옥 제품":0,"피혁":0,"백은":305},"말레이":{"목재":101,"녹용":990,"도자기":486,"녹차":0,"비단":214,"진주":479,"벼":95,"제비집":531,"상아":1090,"파인애플":105,"꽃게":185,"술":96,"어육":81,"철광석":181,"향료":286,"야자":95,"수정":212,"옥 제품":279,"피혁":297,"백은":319},"버마":{"목재":103,"녹용":0,"도자기":530,"녹차":186,"비단":184,"진주":531,"벼":103,"제비집":477,"상아":977,"파인애플":0,"꽃게":190,"술":103,"어육":104,"철광석":178,"향료":316,"야자":0,"수정":186,"옥 제품":0,"피혁":302,"백은":0},"천축":{"목재":92,"녹용":0,"도자기":502,"녹차":0,"비단":202,"진주":502,"벼":0,"제비집":463,"상아":941,"파인애플":0,"꽃게":0,"술":0,"어육":99,"철광석":201,"향료":254,"야자":101,"수정":186,"옥 제품":288,"피혁":0,"백은":300},"실론":{"목재":98,"녹용":970,"도자기":496,"녹차":0,"비단":196,"진주":478,"벼":0,"제비집":496,"상아":943,"파인애플":98,"꽃게":190,"술":0,"어육":0,"철광석":0,"향료":293,"야자":84,"수정":0,"옥 제품":0,"피혁":281,"백은":0},"페르시아":{"목재":92,"녹용":0,"도자기":0,"녹차":194,"비단":190,"진주":0,"벼":99,"제비집":490,"상아":0,"파인애플":0,"꽃게":183,"술":0,"어육":91,"철광석":189,"향료":0,"야자":0,"수정":161,"옥 제품":0,"피혁":0,"백은":272},"대식국":{"목재":94,"녹용":989,"도자기":498,"녹차":209,"비단":198,"진주":510,"벼":96,"제비집":460,"상아":1053,"파인애플":105,"꽃게":0,"술":94,"어육":91,"철광석":0,"향료":307,"야자":90,"수정":0,"옥 제품":250,"피혁":316,"백은":282},"미스르":{"목재":97,"녹용":982,"도자기":471,"녹차":208,"비단":183,"진주":478,"벼":93,"제비집":501,"상아":1045,"파인애플":97,"꽃게":189,"술":0,"어육":93,"철광석":205,"향료":298,"야자":103,"수정":0,"옥 제품":281,"피혁":255,"백은":305},"바스라":{"목재":102,"녹용":936,"도자기":458,"녹차":210,"비단":187,"진주":0,"벼":101,"제비집":0,"상아":0,"파인애플":103,"꽃게":187,"술":97,"어육":96,"철광석":0,"향료":297,"야자":92,"수정":188,"옥 제품":0,"피혁":297,"백은":245}};
+
+const STORAGE_KEY = "gabbu_prices_v1";
+let prices = loadPrices();
+let departure = PORT_ORDER[0];
+let editPort = PORT_ORDER[0];
+let selectedDest = null;
+
+function loadPrices() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      for (const p of PORT_ORDER) {
+        if (!data[p]) data[p] = {};
+        for (const it of ITEMS) {
+          if (typeof data[p][it] !== "number") data[p][it] = DEFAULT_PRICES[p]?.[it] ?? 0;
+        }
+      }
+      return data;
+    }
+  } catch (e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_PRICES));
+}
+function savePrices() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(prices));
+}
+function resetPrices() {
+  if (!confirm("모든 가격을 기본값으로 초기화할까요?")) return;
+  prices = JSON.parse(JSON.stringify(DEFAULT_PRICES));
+  savePrices();
+  renderAll();
+}
+
+function fmt(n) { return n.toLocaleString(); }
+function fmtRate(r) { return (r * 100).toFixed(1) + "%"; }
+
+function populatePortSelect(sel, current) {
+  sel.innerHTML = "";
+  for (const p of PORT_ORDER) {
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = `${p}  [특산품: ${SPECIALS[p]}]`;
+    if (p === current) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function renderPriceTable() {
+  const tbody = document.querySelector("#priceTable tbody");
+  tbody.innerHTML = "";
+  for (const item of ITEMS) {
+    const tr = document.createElement("tr");
+    const isSpecial = item === SPECIALS[editPort];
+    tr.innerHTML = `
+      <td>${item}</td>
+      <td>${isSpecial ? '<span class="special">⭐</span>' : ''}</td>
+      <td class="num">
+        <input type="number" class="price-input" min="0" step="1" value="${prices[editPort][item]}" data-item="${item}">
+      </td>`;
+    tbody.appendChild(tr);
+  }
+  tbody.querySelectorAll("input.price-input").forEach(inp => {
+    inp.addEventListener("input", e => {
+      const item = e.target.dataset.item;
+      const val = Math.max(0, parseInt(e.target.value || "0", 10));
+      prices[editPort][item] = val;
+      savePrices();
+      renderTop();
+      if (selectedDest) renderDest();
+    });
+  });
+}
+
+function computeBestPerItem(from) {
+  const dep = prices[from];
+  const list = [];
+  for (const item of ITEMS) {
+    const buy = dep[item];
+    if (buy <= 0) continue;
+    let best = null;
+    for (const dest of PORT_ORDER) {
+      if (dest === from) continue;
+      const sell = prices[dest][item];
+      if (sell <= 0 || sell <= buy) continue;
+      const profit = sell - buy;
+      const rate = profit / buy;
+      if (!best || rate > best.rate) {
+        best = { dest, item, buy, sell, profit, rate };
+      }
+    }
+    if (best) list.push(best);
+  }
+  list.sort((a,b) => b.rate - a.rate);
+  return list;
+}
+
+function computeForDest(from, dest) {
+  const dep = prices[from];
+  const list = [];
+  for (const item of ITEMS) {
+    const buy = dep[item];
+    const sell = prices[dest][item];
+    if (buy <= 0 || sell <= 0 || sell <= buy) continue;
+    const profit = sell - buy;
+    list.push({ item, buy, sell, profit, rate: profit/buy });
+  }
+  list.sort((a,b) => b.rate - a.rate);
+  return list;
+}
+
+function renderTop() {
+  const top = computeBestPerItem(departure).slice(0, 10);
+  document.getElementById("topTitle").textContent = `📊 ${departure} 출발 — 화물별 최고 수익 Top 10`;
+
+  const metricsBox = document.getElementById("metricsBox");
+  const content = document.getElementById("topContent");
+  const hint = document.getElementById("topHint");
+
+  if (top.length === 0) {
+    metricsBox.innerHTML = "";
+    content.innerHTML = '<div class="empty">수익이 나는 화물이 없습니다. 가격을 입력해주세요.</div>';
+    hint.style.display = "none";
+    return;
+  }
+
+  const medals = ["🥇","🥈","🥉"];
+  metricsBox.innerHTML = top.slice(0,3).map((r,i) => `
+    <div class="metric">
+      <div class="label">${medals[i]} ${r.dest} · ${r.item}</div>
+      <div class="value">${fmtRate(r.rate)}</div>
+      <div class="sub">차익 +${fmt(r.profit)}</div>
+    </div>
+  `).join("");
+
+  content.innerHTML = `
+    <table>
+      <thead>
+        <tr><th class="rank">#</th><th>도착지</th><th>화물</th>
+          <th class="num">구매가격</th><th class="num">판매가격</th>
+          <th class="num">차익</th><th class="num">수익률</th></tr>
+      </thead>
+      <tbody>
+        ${top.map((r,i) => `
+          <tr class="clickable ${selectedDest === r.dest ? 'selected' : ''}" data-dest="${r.dest}">
+            <td class="rank">${i+1}</td>
+            <td>${r.dest}</td>
+            <td>${r.item}${r.item === SPECIALS[departure] ? ' <span class="special">⭐</span>' : ''}</td>
+            <td class="num">${fmt(r.buy)}</td>
+            <td class="num">${fmt(r.sell)}</td>
+            <td class="num positive">+${fmt(r.profit)}</td>
+            <td class="num positive">${fmtRate(r.rate)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>`;
+
+  hint.style.display = "block";
+  content.querySelectorAll("tr.clickable").forEach(tr => {
+    tr.addEventListener("click", () => {
+      selectedDest = tr.dataset.dest;
+      renderTop();
+      renderDest();
+      document.getElementById("destCard").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  });
+}
+
+function renderDest() {
+  if (!selectedDest) {
+    document.getElementById("destCard").style.display = "none";
+    return;
+  }
+  const card = document.getElementById("destCard");
+  card.style.display = "block";
+  document.getElementById("destTitle").textContent = `📦 ${departure} → ${selectedDest}  화물 수익률 Top 10`;
+
+  const list = computeForDest(departure, selectedDest).slice(0, 10);
+  const content = document.getElementById("destContent");
+
+  if (list.length === 0) {
+    content.innerHTML = `<div class="empty">${selectedDest}로 보낼 때 이익이 나는 화물이 없습니다.</div>`;
+    return;
+  }
+
+  content.innerHTML = `
+    <table>
+      <thead>
+        <tr><th class="rank">#</th><th>화물</th>
+          <th class="num">구매가격</th><th class="num">판매가격</th>
+          <th class="num">차익</th><th class="num">수익률</th></tr>
+      </thead>
+      <tbody>
+        ${list.map((r,i) => `
+          <tr>
+            <td class="rank">${i+1}</td>
+            <td>${r.item}${r.item === SPECIALS[departure] ? ' <span class="special">⭐</span>' : ''}</td>
+            <td class="num">${fmt(r.buy)}</td>
+            <td class="num">${fmt(r.sell)}</td>
+            <td class="num positive">+${fmt(r.profit)}</td>
+            <td class="num positive">${fmtRate(r.rate)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>`;
+}
+
+function renderAll() {
+  populatePortSelect(document.getElementById("departure"), departure);
+  populatePortSelect(document.getElementById("editPort"), editPort);
+  renderPriceTable();
+  renderTop();
+  renderDest();
+}
+
+document.getElementById("departure").addEventListener("change", e => {
+  departure = e.target.value;
+  selectedDest = null;
+  renderTop();
+  renderDest();
+});
+document.getElementById("editPort").addEventListener("change", e => {
+  editPort = e.target.value;
+  renderPriceTable();
+});
+document.getElementById("resetBtn").addEventListener("click", resetPrices);
+
+renderAll();
+</script>
+</body>
+</html>
