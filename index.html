@@ -18,6 +18,13 @@
     padding: 20px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
   }
   h2 { font-size: 18px; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  h2.collapsible { cursor: pointer; user-select: none; margin: 0; }
+  h2.collapsible:hover { color: #3b82f6; }
+  h2.collapsible .chevron { margin-left: auto; font-size: 14px; color: #6b7380; transition: transform .2s; }
+  .card.collapsed h2.collapsible { margin: 0; }
+  .card.collapsed h2.collapsible .chevron { transform: rotate(-90deg); }
+  .card.collapsed .collapsible-body { display: none; }
+  .collapsible-body { margin-top: 14px; }
   label { display: block; font-size: 13px; color: #4a5262; margin-bottom: 6px; font-weight: 500; }
   select, input[type=number] {
     width: 100%; padding: 9px 12px; border: 1px solid #d4d8e0; border-radius: 6px;
@@ -76,20 +83,22 @@
   </div>
 
   <!-- 2) 가격 입력 -->
-  <div class="card">
-    <h2>📝 항구별 화물 가격 입력</h2>
-    <label>가격을 입력할 항구</label>
-    <select id="editPort"></select>
-    <div style="margin-top: 16px;">
-      <table id="priceTable">
-        <thead>
-          <tr><th>화물</th><th>특산품</th><th class="num">가격</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <div class="actions">
-      <button id="resetBtn">🔄 기본값으로 초기화</button>
+  <div class="card" id="priceCard">
+    <h2 class="collapsible" id="priceToggle">📝 항구별 화물 가격 입력<span class="chevron">▼</span></h2>
+    <div class="collapsible-body">
+      <label>가격을 입력할 항구</label>
+      <select id="editPort"></select>
+      <div style="margin-top: 16px;">
+        <table id="priceTable">
+          <thead>
+            <tr><th>화물</th><th>특산품</th><th class="num">가격</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button id="resetBtn">🔄 기본값으로 초기화</button>
+      </div>
     </div>
   </div>
 
@@ -357,6 +366,15 @@ document.getElementById("editPort").addEventListener("change", e => {
   renderPriceTable();
 });
 document.getElementById("resetBtn").addEventListener("click", resetPrices);
+
+// 2번 섹션 접기/펼치기
+const COLLAPSE_KEY = "gabbu_price_collapsed";
+const priceCard = document.getElementById("priceCard");
+if (localStorage.getItem(COLLAPSE_KEY) === "1") priceCard.classList.add("collapsed");
+document.getElementById("priceToggle").addEventListener("click", () => {
+  priceCard.classList.toggle("collapsed");
+  localStorage.setItem(COLLAPSE_KEY, priceCard.classList.contains("collapsed") ? "1" : "0");
+});
 
 renderAll();
 </script>
