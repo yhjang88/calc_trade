@@ -100,9 +100,11 @@
         </table>
       </div>
       <div class="actions">
-        <button id="saveBtn" class="primary">💾 저장</button>
+        <button id="saveBtn" class="primary">💾 저장 (클라우드)</button>
+        <button id="refreshBtn">🔄 새로고침</button>
         <button id="exportBtn">📥 JSON 내보내기</button>
         <button id="importBtn">📂 JSON 불러오기</button>
+        <button id="clearKeyBtn" title="Master Key 초기화">🔑</button>
         <input type="file" id="importFile" accept=".json,application/json" style="display:none;">
         <span id="saveStatus" class="save-status"></span>
       </div>
@@ -150,26 +152,68 @@ const ITEMS = [
 const DEFAULT_PRICES = {"평경":{"목재":82,"녹용":962,"도자기":0,"녹차":180,"비단":0,"진주":499,"벼":0,"제비집":0,"상아":904,"파인애플":93,"꽃게":185,"술":0,"어육":93,"철광석":195,"향료":281,"야자":0,"수정":196,"옥 제품":270,"피혁":0,"백은":0},"개경":{"목재":91,"녹용":829,"도자기":544,"녹차":195,"비단":211,"진주":455,"벼":93,"제비집":503,"상아":1072,"파인애플":106,"꽃게":181,"술":100,"어육":0,"철광석":199,"향료":311,"야자":104,"수정":191,"옥 제품":292,"피혁":292,"백은":275},"명주":{"목재":0,"녹용":925,"도자기":427,"녹차":185,"비단":214,"진주":454,"벼":92,"제비집":506,"상아":0,"파인애플":99,"꽃게":192,"술":0,"어육":104,"철광석":210,"향료":311,"야자":91,"수정":196,"옥 제품":0,"피혁":298,"백은":275},"천주":{"목재":96,"녹용":963,"도자기":0,"녹차":170,"비단":0,"진주":0,"벼":95,"제비집":464,"상아":0,"파인애플":0,"꽃게":198,"술":0,"어육":0,"철광석":198,"향료":285,"야자":99,"수정":187,"옥 제품":0,"피혁":274,"백은":289},"광주":{"목재":98,"녹용":1062,"도자기":491,"녹차":182,"비단":161,"진주":0,"벼":102,"제비집":548,"상아":979,"파인애플":100,"꽃게":191,"술":94,"어육":91,"철광석":193,"향료":296,"야자":93,"수정":183,"옥 제품":289,"피혁":320,"백은":317},"담수":{"목재":95,"녹용":1012,"도자기":503,"녹차":206,"비단":202,"진주":433,"벼":104,"제비집":496,"상아":1077,"파인애플":98,"꽃게":209,"술":91,"어육":108,"철광석":217,"향료":0,"야자":104,"수정":185,"옥 제품":307,"피혁":0,"백은":306},"안남":{"목재":0,"녹용":0,"도자기":470,"녹차":186,"비단":0,"진주":0,"벼":84,"제비집":0,"상아":0,"파인애플":0,"꽃게":192,"술":92,"어육":92,"철광석":0,"향료":278,"야자":95,"수정":202,"옥 제품":0,"피혁":290,"백은":293},"브루나이":{"목재":98,"녹용":949,"도자기":451,"녹차":183,"비단":0,"진주":508,"벼":0,"제비집":432,"상아":974,"파인애플":91,"꽃게":0,"술":94,"어육":101,"철광석":0,"향료":278,"야자":95,"수정":186,"옥 제품":293,"피혁":293,"백은":0},"섬라국":{"목재":0,"녹용":920,"도자기":492,"녹차":185,"비단":199,"진주":467,"벼":0,"제비집":0,"상아":892,"파인애플":0,"꽃게":188,"술":0,"어육":0,"철광석":198,"향료":0,"야자":96,"수정":195,"옥 제품":294,"피혁":0,"백은":0},"크메르":{"목재":0,"녹용":0,"도자기":459,"녹차":0,"비단":188,"진주":481,"벼":96,"제비집":0,"상아":944,"파인애플":89,"꽃게":0,"술":97,"어육":95,"철광석":0,"향료":299,"야자":0,"수정":181,"옥 제품":278,"피혁":0,"백은":281},"술루":{"목재":95,"녹용":0,"도자기":0,"녹차":199,"비단":0,"진주":473,"벼":0,"제비집":0,"상아":941,"파인애플":94,"꽃게":161,"술":0,"어육":0,"철광석":0,"향료":0,"야자":93,"수정":193,"옥 제품":283,"피혁":291,"백은":283},"스리비자야":{"목재":92,"녹용":0,"도자기":504,"녹차":0,"비단":0,"진주":463,"벼":0,"제비집":469,"상아":976,"파인애플":0,"꽃게":0,"술":81,"어육":100,"철광석":0,"향료":0,"야자":97,"수정":0,"옥 제품":0,"피혁":0,"백은":305},"말레이":{"목재":101,"녹용":990,"도자기":486,"녹차":0,"비단":214,"진주":479,"벼":95,"제비집":531,"상아":1090,"파인애플":105,"꽃게":185,"술":96,"어육":81,"철광석":181,"향료":286,"야자":95,"수정":212,"옥 제품":279,"피혁":297,"백은":319},"버마":{"목재":103,"녹용":0,"도자기":530,"녹차":186,"비단":184,"진주":531,"벼":103,"제비집":477,"상아":977,"파인애플":0,"꽃게":190,"술":103,"어육":104,"철광석":178,"향료":316,"야자":0,"수정":186,"옥 제품":0,"피혁":302,"백은":0},"천축":{"목재":92,"녹용":0,"도자기":502,"녹차":0,"비단":202,"진주":502,"벼":0,"제비집":463,"상아":941,"파인애플":0,"꽃게":0,"술":0,"어육":99,"철광석":201,"향료":254,"야자":101,"수정":186,"옥 제품":288,"피혁":0,"백은":300},"실론":{"목재":98,"녹용":970,"도자기":496,"녹차":0,"비단":196,"진주":478,"벼":0,"제비집":496,"상아":943,"파인애플":98,"꽃게":190,"술":0,"어육":0,"철광석":0,"향료":293,"야자":84,"수정":0,"옥 제품":0,"피혁":281,"백은":0},"페르시아":{"목재":92,"녹용":0,"도자기":0,"녹차":194,"비단":190,"진주":0,"벼":99,"제비집":490,"상아":0,"파인애플":0,"꽃게":183,"술":0,"어육":91,"철광석":189,"향료":0,"야자":0,"수정":161,"옥 제품":0,"피혁":0,"백은":272},"대식국":{"목재":94,"녹용":989,"도자기":498,"녹차":209,"비단":198,"진주":510,"벼":96,"제비집":460,"상아":1053,"파인애플":105,"꽃게":0,"술":94,"어육":91,"철광석":0,"향료":307,"야자":90,"수정":0,"옥 제품":250,"피혁":316,"백은":282},"미스르":{"목재":97,"녹용":982,"도자기":471,"녹차":208,"비단":183,"진주":478,"벼":93,"제비집":501,"상아":1045,"파인애플":97,"꽃게":189,"술":0,"어육":93,"철광석":205,"향료":298,"야자":103,"수정":0,"옥 제품":281,"피혁":255,"백은":305},"바스라":{"목재":102,"녹용":936,"도자기":458,"녹차":210,"비단":187,"진주":0,"벼":101,"제비집":0,"상아":0,"파인애플":103,"꽃게":187,"술":97,"어육":96,"철광석":0,"향료":297,"야자":92,"수정":188,"옥 제품":0,"피혁":297,"백은":245}};
 
 const STORAGE_KEY = "gabbu_prices_v1";
+const MASTER_KEY_STORAGE = "gabbu_master_key";
+const REMOTE = {
+  binId: "69e5f24736566621a8d0ecbb",
+  accessKey: "$2a$10$gP/OMHKwVI0OZzWdAP4vR.42dd8DRRcqZ04lpyRThRvItUUwxyClO",
+};
 let prices = loadPrices();
 let departure = PORT_ORDER[0];
 let editPort = PORT_ORDER[0];
 let selectedDest = null;
 
+function normalizePrices(raw) {
+  const valid = {};
+  for (const p of PORT_ORDER) {
+    valid[p] = {};
+    for (const it of ITEMS) {
+      const v = raw?.[p]?.[it];
+      valid[p][it] = (typeof v === "number" && v >= 0) ? Math.floor(v) : (DEFAULT_PRICES[p]?.[it] ?? 0);
+    }
+  }
+  return valid;
+}
 function loadPrices() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const data = JSON.parse(raw);
-      for (const p of PORT_ORDER) {
-        if (!data[p]) data[p] = {};
-        for (const it of ITEMS) {
-          if (typeof data[p][it] !== "number") data[p][it] = DEFAULT_PRICES[p]?.[it] ?? 0;
-        }
-      }
-      return data;
-    }
+    if (raw) return normalizePrices(JSON.parse(raw));
   } catch (e) {}
   return JSON.parse(JSON.stringify(DEFAULT_PRICES));
+}
+
+async function cloudFetch() {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${REMOTE.binId}/latest`, {
+    headers: { "X-Access-Key": REMOTE.accessKey }
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return data.record;
+}
+async function cloudUpload(payload) {
+  let key = localStorage.getItem(MASTER_KEY_STORAGE);
+  if (!key) {
+    key = prompt("편집자 키(Master Key)를 입력하세요:");
+    if (!key) return { ok: false, reason: "취소됨" };
+    localStorage.setItem(MASTER_KEY_STORAGE, key.trim());
+    key = key.trim();
+  }
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${REMOTE.binId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Master-Key": key,
+      "X-Bin-Versioning": "false",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem(MASTER_KEY_STORAGE);
+      return { ok: false, reason: "권한 없음(키 오류)" };
+    }
+    return { ok: false, reason: `HTTP ${res.status}` };
+  }
+  return { ok: true };
 }
 function savePrices() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(prices));
@@ -377,12 +421,61 @@ function flashStatus(msg, color) {
   window._saveTimer = setTimeout(() => { status.textContent = ""; }, 2000);
 }
 
-document.getElementById("saveBtn").addEventListener("click", () => {
+document.getElementById("saveBtn").addEventListener("click", async () => {
   savePrices();
   renderTop();
   if (selectedDest) renderDest();
-  flashStatus("✅ 저장 완료");
+  flashStatus("☁️ 업로드 중...");
+  const result = await cloudUpload(prices);
+  if (result.ok) {
+    flashStatus("☁️ 클라우드 저장 완료");
+  } else {
+    flashStatus(`❌ ${result.reason} (로컬은 저장됨)`, "#dc2626");
+  }
 });
+
+document.getElementById("refreshBtn").addEventListener("click", async () => {
+  flashStatus("🔄 불러오는 중...");
+  try {
+    const remote = await cloudFetch();
+    prices = normalizePrices(remote || {});
+    savePrices();
+    renderPriceTable();
+    renderTop();
+    if (selectedDest) renderDest();
+    flashStatus("✅ 최신 데이터 불러옴");
+  } catch (e) {
+    flashStatus(`❌ 불러오기 실패: ${e.message}`, "#dc2626");
+  }
+});
+
+document.getElementById("clearKeyBtn").addEventListener("click", () => {
+  if (localStorage.getItem(MASTER_KEY_STORAGE)) {
+    if (confirm("저장된 Master Key를 삭제할까요? (다음 저장 시 다시 입력해야 합니다)")) {
+      localStorage.removeItem(MASTER_KEY_STORAGE);
+      flashStatus("🔑 키 삭제됨");
+    }
+  } else {
+    flashStatus("저장된 키가 없습니다", "#6b7380");
+  }
+});
+
+// 페이지 로드 시 클라우드에서 자동으로 최신 데이터 가져오기
+(async () => {
+  try {
+    const remote = await cloudFetch();
+    if (remote && typeof remote === "object") {
+      prices = normalizePrices(remote);
+      savePrices();
+      renderPriceTable();
+      renderTop();
+      if (selectedDest) renderDest();
+      flashStatus("☁️ 클라우드 데이터 로드됨");
+    }
+  } catch (e) {
+    console.warn("Remote fetch failed:", e);
+  }
+})();
 
 document.getElementById("exportBtn").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(prices, null, 2)], { type: "application/json" });
