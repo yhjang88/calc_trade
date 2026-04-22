@@ -164,10 +164,10 @@
   </div>
 
   <div class="card">
-    <h2 id="topTitle">화물별 최고 수익 Top 10</h2>
+    <h2 id="topTitle">화물별 최고 수익 Top 15</h2>
     <div id="metricsBox" class="metrics"></div>
     <div id="topContent"></div>
-    <div class="hint" id="topHint">표의 행을 클릭하면 해당 도착지의 화물별 수익률 Top 10이 아래에 표시됩니다.</div>
+    <div class="hint" id="topHint">표의 행을 클릭하면 해당 도착지의 화물별 수익률 Top 15가 아래에 표시됩니다.</div>
   </div>
 
   <div class="card" id="destCard" style="display:none;">
@@ -368,7 +368,7 @@ function renderPriceTable() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${item}</td>
-      <td>${isSpecial ? '<span class="special">특산</span>' : ""}</td>
+      <td>${isSpecial ? '<span class="special">[특산]</span>' : ""}</td>
       <td class="num">
         <input type="number" class="price-input" min="0" step="1" value="${prices[editPort][item]}" data-item="${item}">
       </td>
@@ -429,8 +429,8 @@ function computeForDest(from, dest) {
 }
 
 function renderTop() {
-  const top = computeBestPerItem(departure).slice(0, 10);
-  document.getElementById("topTitle").textContent = `📊 ${departure} 출발 화물별 최고 수익 Top 10`;
+  const top = computeBestPerItem(departure).slice(0, 15);
+  document.getElementById("topTitle").textContent = `${departure} 출발 화물별 최고 수익 Top 15`;
 
   const metricsBox = document.getElementById("metricsBox");
   const content = document.getElementById("topContent");
@@ -470,7 +470,7 @@ function renderTop() {
           <tr class="clickable ${selectedDest === row.dest ? "selected" : ""}" data-dest="${row.dest}">
             <td class="rank">${index + 1}</td>
             <td>${row.dest}</td>
-            <td>${row.item}${row.item === SPECIALS[departure] ? ' <span class="special">특산</span>' : ""}</td>
+            <td>${row.item}${row.item === SPECIALS[departure] ? ' <span class="special">[특산]</span>' : ""}</td>
             <td class="num">${fmt(row.buy)}</td>
             <td class="num">${fmt(row.sell)}</td>
             <td class="num positive">+${fmt(row.profit)}</td>
@@ -502,9 +502,9 @@ function renderDest() {
   }
 
   card.style.display = "block";
-  document.getElementById("destTitle").textContent = `📦 ${departure} → ${selectedDest} 수익률 Top 10`;
+  document.getElementById("destTitle").textContent = `${departure} → ${selectedDest} 수익률 Top 15`;
 
-  const rows = computeForDest(departure, selectedDest).slice(0, 10);
+  const rows = computeForDest(departure, selectedDest).slice(0, 15);
   if (rows.length === 0) {
     content.innerHTML = `<div class="empty">${selectedDest}에서 이익이 나는 화물이 없습니다.</div>`;
     return;
@@ -526,7 +526,7 @@ function renderDest() {
         ${rows.map((row, index) => `
           <tr>
             <td class="rank">${index + 1}</td>
-            <td>${row.item}${row.item === SPECIALS[departure] ? ' <span class="special">특산</span>' : ""}</td>
+            <td>${row.item}${row.item === SPECIALS[departure] ? ' <span class="special">[특산]</span>' : ""}</td>
             <td class="num">${fmt(row.buy)}</td>
             <td class="num">${fmt(row.sell)}</td>
             <td class="num positive">+${fmt(row.profit)}</td>
@@ -572,7 +572,6 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   }
 });
 
-document.getElementById("refreshBtn").style.display = "";
 document.getElementById("refreshBtn").addEventListener("click", async () => {
   flashStatus("Refreshing...");
   try {
@@ -584,7 +583,6 @@ document.getElementById("refreshBtn").addEventListener("click", async () => {
   }
 });
 
-document.getElementById("clearKeyBtn").style.display = "";
 document.getElementById("clearKeyBtn").addEventListener("click", () => {
   if (!localStorage.getItem(MASTER_KEY_STORAGE)) {
     flashStatus("No saved key", "#6b7380");
