@@ -3,34 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>媛묐?: ?μ궗???쒕? ???꾨?????줈 ?섏씡 怨꾩궛湲?/title>
+<title>갑부: 장사의 시대 - 무역 수익 계산기</title>
 <style>
   * { box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", Roboto, sans-serif;
-    margin: 0; padding: 24px; background: #f5f6f8; color: #1d2433;
+    margin: 0;
+    padding: 24px;
+    background: #f5f6f8;
+    color: #1d2433;
   }
   .container { max-width: 1100px; margin: 0 auto; }
   h1 { margin: 0 0 4px; font-size: 26px; }
   .subtitle { color: #6b7380; margin-bottom: 24px; }
   .card {
-    background: #fff; border: 1px solid #e3e6eb; border-radius: 10px;
-    padding: 20px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    background: #fff;
+    border: 1px solid #e3e6eb;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   }
-  h2 { font-size: 18px; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  h2 {
+    font-size: 18px;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
   h2.collapsible { cursor: pointer; user-select: none; margin: 0; }
   h2.collapsible:hover { color: #3b82f6; }
-  h2.collapsible .chevron { margin-left: auto; font-size: 14px; color: #6b7380; transition: transform .2s; }
+  h2.collapsible .chevron {
+    margin-left: auto;
+    font-size: 14px;
+    color: #6b7380;
+    transition: transform .2s;
+  }
   .card.collapsed h2.collapsible { margin: 0; }
   .card.collapsed h2.collapsible .chevron { transform: rotate(-90deg); }
   .card.collapsed .collapsible-body { display: none; }
   .collapsible-body { margin-top: 14px; }
-  label { display: block; font-size: 13px; color: #4a5262; margin-bottom: 6px; font-weight: 500; }
-  select, input[type=number] {
-    width: 100%; padding: 9px 12px; border: 1px solid #d4d8e0; border-radius: 6px;
-    font-size: 14px; background: #fff; font-family: inherit;
+  label {
+    display: block;
+    font-size: 13px;
+    color: #4a5262;
+    margin-bottom: 6px;
+    font-weight: 500;
   }
-  select:focus, input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+  select, input[type=number] {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #d4d8e0;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+    font-family: inherit;
+  }
+  select:focus, input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid #eef0f4; }
   th { background: #f8f9fb; font-weight: 600; color: #4a5262; font-size: 13px; }
@@ -42,30 +75,51 @@
   tbody tr.clickable:hover { background: #f0f7ff; }
   tbody tr.selected { background: #dbeafe !important; }
   .positive { color: #16a34a; font-weight: 600; }
-  .negative { color: #dc2626; }
   .special { color: #d97706; }
-  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
   .metric {
     background: linear-gradient(135deg, #fefefe, #f0f4ff);
-    border: 1px solid #e0e7ff; border-radius: 8px; padding: 14px;
+    border: 1px solid #e0e7ff;
+    border-radius: 8px;
+    padding: 14px;
   }
   .metric .label { font-size: 12px; color: #6b7380; margin-bottom: 4px; }
   .metric .value { font-size: 22px; font-weight: 700; color: #16a34a; margin-bottom: 2px; }
   .metric .sub { font-size: 12px; color: #6b7380; }
   .price-input {
-    width: 100%; padding: 6px 8px; border: 1px solid #d4d8e0; border-radius: 4px;
-    font-size: 14px; text-align: right; font-variant-numeric: tabular-nums;
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #d4d8e0;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
   .price-input:focus { outline: none; border-color: #3b82f6; background: #f0f7ff; }
   .empty {
-    padding: 28px; text-align: center; color: #6b7380; background: #fafbfd;
-    border-radius: 6px; font-size: 14px;
+    padding: 28px;
+    text-align: center;
+    color: #6b7380;
+    background: #fafbfd;
+    border-radius: 6px;
+    font-size: 14px;
   }
   .hint { color: #6b7380; font-size: 13px; margin-top: 10px; }
-  .actions { display: flex; gap: 8px; margin-top: 12px; }
+  .actions { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
   button {
-    padding: 8px 14px; border: 1px solid #d4d8e0; background: #fff; border-radius: 6px;
-    font-size: 13px; cursor: pointer; font-family: inherit; color: #4a5262;
+    padding: 8px 14px;
+    border: 1px solid #d4d8e0;
+    background: #fff;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    color: #4a5262;
   }
   button:hover { background: #f0f4ff; border-color: #3b82f6; color: #3b82f6; }
   button.primary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
@@ -76,58 +130,52 @@
 </head>
 <body>
 <div class="container">
-  <h1>??媛묐?: ?μ궗???쒕? ???꾨?????줈 ?섏씡 怨꾩궛湲?/h1>
-  <div class="subtitle">異쒕컻 ??뎄瑜??좏깮?섍퀬 媛???뎄???붾Ъ 媛寃⑹쓣 ?낅젰?섎㈃ 理쒓퀬 ?섏씡 寃쎈줈瑜??먮룞?쇰줈 怨꾩궛?⑸땲??</div>
+  <h1>갑부: 장사의 시대 - 무역 수익 계산기</h1>
+  <div class="subtitle">출발 항구를 선택하고 각 항구의 화물 가격을 입력하면 최고 수익 경로를 자동으로 계산합니다.</div>
 
-  <!-- 1) 異쒕컻 ??뎄 -->
   <div class="card">
-    <h2>?썟 異쒕컻 ??뎄 ?좏깮</h2>
+    <h2>출발 항구 선택</h2>
     <select id="departure"></select>
   </div>
 
-  <!-- 2) 媛寃??낅젰 -->
   <div class="card" id="priceCard">
-    <h2 class="collapsible" id="priceToggle">?뱷 ??뎄蹂??붾Ъ 媛寃??낅젰<span class="chevron">??/span></h2>
+    <h2 class="collapsible" id="priceToggle">항구별 화물 가격 입력<span class="chevron">▼</span></h2>
     <div class="collapsible-body">
-      <label>媛寃⑹쓣 ?낅젰????뎄</label>
+      <label>가격을 입력할 항구</label>
       <select id="editPort"></select>
       <div style="margin-top: 16px;">
         <table id="priceTable">
           <thead>
-            <tr><th>?붾Ъ</th><th>?뱀궛??/th><th class="num">媛寃?/th></tr>
+            <tr><th>화물</th><th>특산품</th><th class="num">가격</th></tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
       <div class="actions">
-        <button id="saveBtn" class="primary">?뮶 ???(?대씪?곕뱶)</button>
-        <button id="refreshBtn" style="display:none;">?봽 ?덈줈怨좎묠</button>
-        <button id="clearKeyBtn" title="Master Key 珥덇린?? style="display:none;">?뵎</button>
+        <button id="saveBtn" class="primary">저장 (클라우드)</button>
+        <button id="refreshBtn" style="display:none;">새로고침</button>
+        <button id="clearKeyBtn" title="Master Key 초기화" style="display:none;">키 삭제</button>
         <span id="saveStatus" class="save-status"></span>
-        <button id="exportBtn" style="margin-left:auto;">?뱿 JSON ?대낫?닿린</button>
-        <button id="importBtn">?뱛 JSON 遺덈윭?ㅺ린</button>
+        <button id="exportBtn" style="margin-left:auto;">JSON 내보내기</button>
+        <button id="importBtn">JSON 불러오기</button>
         <input type="file" id="importFile" accept=".json,application/json" style="display:none;">
       </div>
     </div>
   </div>
 
-  <!-- 3) Top 10 -->
   <div class="card">
-    <h2 id="topTitle">?뱤 ?붾Ъ蹂?理쒓퀬 ?섏씡 Top 10</h2>
+    <h2 id="topTitle">화물별 최고 수익 Top 10</h2>
     <div id="metricsBox" class="metrics"></div>
     <div id="topContent"></div>
-    <div class="hint" id="topHint">?뮕 ?쒖뿉???됱쓣 ?대┃?섎㈃ ?대떦 ?꾩갑吏???붾Ъ蹂??섏씡瑜?Top 10???꾨옒???쒖떆?⑸땲??</div>
+    <div class="hint" id="topHint">표의 행을 클릭하면 해당 도착지의 화물별 수익률 Top 10이 아래에 표시됩니다.</div>
   </div>
 
-  <!-- 4) ?좏깮 ?꾩갑吏 ?곸꽭 -->
   <div class="card" id="destCard" style="display:none;">
-    <h2 id="destTitle">?벀 ?꾩갑吏 ?곸꽭</h2>
+    <h2 id="destTitle">도착지 상세</h2>
     <div id="destContent"></div>
   </div>
 
-  <div class="footer">
-    ?곗씠?곕뒗 釉뚮씪?곗? 濡쒖뺄????λ맗?덈떎 쨌 ??
-  </div>
+  <div class="footer">데이터는 브라우저 로컬에 저장됩니다.</div>
 </div>
 
 <script>
@@ -395,7 +443,7 @@ function renderTop() {
     return;
   }
 
-  const medals = ["🥇", "🥈", "🥉"];
+  const medals = ["1위", "2위", "3위"];
   metricsBox.innerHTML = top.slice(0, 3).map((row, index) => `
     <div class="metric">
       <div class="label">${medals[index]} ${row.dest} / ${row.item}</div>
@@ -614,4 +662,3 @@ renderAll();
 </script>
 </body>
 </html>
-
